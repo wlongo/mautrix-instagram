@@ -1,0 +1,16 @@
+[Unit]
+Description=mautrix-instagram bridge
+After=network.target
+
+[Service]
+User=matrix-service
+Environment=PYTHONUNBUFFERED=1
+WorkingDirectory=/home/matrix-service/mautrix-instagram/
+ExecStart=/home/matrix-service/mautrix-instagram/mautrix-instagram
+StandardOutput=append:/home/matrix-service/mautrix-instagram/console.log
+StandardError=append:/home/matrix-service/mautrix-instagram/mautrix-instagram-service.log
+SyslogIdentifier=mautrix-instagram
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

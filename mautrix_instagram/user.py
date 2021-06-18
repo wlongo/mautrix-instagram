@@ -22,6 +22,7 @@ import time
 from mauigpapi import AndroidAPI, AndroidState, AndroidMQTT
 from mauigpapi.mqtt import Connect, Disconnect, GraphQLSubscription, SkywalkerSubscription
 from mauigpapi.types import (CurrentUser, MessageSyncEvent, Operation, RealtimeDirectEvent,
+                             AppPresenceEvent, AppPresenceEventPayload,				# (WL) 2021-06-17 : AppPresenceEvent added!
                              ActivityIndicatorData, TypingStatus, ThreadSyncEvent, Thread)
 from mauigpapi.errors import (IGNotLoggedInError, MQTTNotLoggedIn, MQTTNotConnected,
                               IrisSubscribeError)
@@ -147,6 +148,7 @@ class User(DBUser, BaseUser):
         self.mqtt.add_event_handler(MessageSyncEvent, self.handle_message)
         self.mqtt.add_event_handler(ThreadSyncEvent, self.handle_thread_sync)
         self.mqtt.add_event_handler(RealtimeDirectEvent, self.handle_rtd)
+        self.mqtt.add_event_handler(AppPresenceEvent, self.handle_presence)				# (WL) 2021-06-17 : Event AppPresenceEvent added! 
 
         await self.update()
 
@@ -429,6 +431,25 @@ class User(DBUser, BaseUser):
             self.remote_typing_status = TypingStatus.TEXT if is_typing else TypingStatus.OFF
         await puppet.intent_for(portal).set_typing(portal.mxid, is_typing=is_typing,
                                                    timeout=evt.value.ttl)
+
+    # ----------------------------------------------------------------------------------------------------------------------
+
+    @async_time(METRIC_RTD)
+    async def handle_presence(self, evt: AppPresenceEvent) -> None:
+        from datetime import datetime
+
+        now = int(time.time() * 1000)
+
+        # print( f"** FX ** : {now} : ( Type: {type(evt)} ) | {evt} " )
+
+        user_id = evt.user_id
+        is_active = evt.is_active
+        last_activity_timestamp = datetime.fromtimestamp( int(evt.last_activity_at_ms) / 1000 )
+        in_threads = evt.in_threads
+
+        print( f"** PRESENCE ** : user_id = {user_id} - last activity : {last_activity_timestamp.strftime('%d/%m/%Y %H:%M:%S')} - is_active: {evt.is_active} = in_threads: {in_threads} ")
+
+    # ----------------------------------------------------------------------------------------------------------------------
 
     # endregion
     # region Database getters
