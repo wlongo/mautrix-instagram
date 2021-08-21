@@ -22,12 +22,12 @@ import time
 from mauigpapi import AndroidAPI, AndroidState, AndroidMQTT
 from mauigpapi.mqtt import Connect, Disconnect, GraphQLSubscription, SkywalkerSubscription
 from mauigpapi.types import (CurrentUser, MessageSyncEvent, Operation, RealtimeDirectEvent,
-                             AppPresenceEvent, AppPresenceEventPayload,				# (WL) 2021-06-17 : AppPresenceEvent added!
+                             AppPresenceEvent, AppPresenceEventPayload,		# (WL) 2021-06-17 : AppPresenceEvent added!
                              ActivityIndicatorData, TypingStatus, ThreadSyncEvent, Thread)
 from mauigpapi.errors import (IGNotLoggedInError, MQTTNotLoggedIn, MQTTNotConnected,
                               IrisSubscribeError)
 from mautrix.bridge import BaseUser, BridgeState, async_getter_lock
-from mautrix.types import UserID, RoomID, EventID, TextMessageEventContent, MessageType
+from mautrix.types import UserID, RoomID, EventID, TextMessageEventContent, MessageType,  PresenceState   # (WL) 2021-08-21 : PresenceState added !
 from mautrix.appservice import AppService
 from mautrix.util.opt_prometheus import Summary, Gauge, async_time
 from mautrix.util.logging import TraceLogger
@@ -443,12 +443,18 @@ class User(DBUser, BaseUser):
         # print( f"** FX ** : {now} : ( Type: {type(evt)} ) | {evt} " )
 
         user_id = evt.user_id
-        is_active = evt.is_active
         last_activity_timestamp = datetime.fromtimestamp( int(evt.last_activity_at_ms) / 1000 )
         in_threads = evt.in_threads
 
-        print( f"** PRESENCE ** : user_id = {user_id} - last activity : {last_activity_timestamp.strftime('%d/%m/%Y %H:%M:%S')} - is_active: {evt.is_active} = in_threads: {in_threads} ")
+        print( f"** PRESENCE ** : user_id = {user_id} - last activity : {last_activity_timestamp.strftime('%d/%m/%Y %H:%M:%S')} - is_active: {evt.is_active} = in_threads: {in_threads} : ", end = '')
 
+        puppet = await pu.Puppet.get_by_pk( int(user_id) )
+        presence_state = PresenceState.ONLINE if evt.is_active else PresenceState.OFFLINE
+        # print( f"  PUPPET FOUND: {puppet} - presence_state: {presence_state}" )
+
+        await puppet.default_mxid_intent.set_presence( presence_state, ignore_cache = True )
+        print("OK")
+                
     # ----------------------------------------------------------------------------------------------------------------------
 
     # endregion
