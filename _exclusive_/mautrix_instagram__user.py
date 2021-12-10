@@ -1,4 +1,3 @@
-
 # mautrix-instagram - A Matrix-Instagram puppeting bridge.
 # Copyright (C) 2020 Tulir Asokan
 #
@@ -23,7 +22,7 @@ import time
 from mauigpapi import AndroidAPI, AndroidState, AndroidMQTT
 from mauigpapi.mqtt import Connect, Disconnect, GraphQLSubscription, SkywalkerSubscription
 from mauigpapi.types import (CurrentUser, MessageSyncEvent, Operation, RealtimeDirectEvent,
-                             AppPresenceEvent, AppPresenceEventPayload,	# (WL) 2021-06-17 : AppPresenceEvent and others added!
+                             AppPresenceEvent, AppPresenceEventPayload,		# (WL) 2021-06-17 : AppPresenceEvent added!
                              ActivityIndicatorData, TypingStatus, ThreadSyncEvent, Thread)
 from mauigpapi.errors import (IGNotLoggedInError, MQTTNotLoggedIn, MQTTNotConnected,
                               IrisSubscribeError)
@@ -455,7 +454,7 @@ class User(DBUser, BaseUser):
 
         await puppet.default_mxid_intent.set_presence( presence_state, ignore_cache = True )
         print("OK")
-
+                
     # ----------------------------------------------------------------------------------------------------------------------
 
     # endregion

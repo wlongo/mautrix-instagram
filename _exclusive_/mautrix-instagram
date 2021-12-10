@@ -1,0 +1,4 @@
+#!/bin/bash
+cd /home/matrix-service/mautrix-instagram
+source .venv/bin/activate
+python3 -m mautrix_instagram -c ./config.yaml
